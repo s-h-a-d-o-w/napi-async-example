@@ -2,6 +2,8 @@
 #include <node_api.h>
 #include "napi_test.h"
 
+#include <stdio.h>
+
 // Great macros:
 // https://github.com/luismreis/node-openvg/blob/7dc7a142905afcb485f4ea7da33826210d0dc066/src/node-common.h#L39
 // Also e.g. (not used here):
@@ -51,17 +53,21 @@ void execute(napi_env env, void* pData) {
 	AsyncData* data = (AsyncData*)pData;
 
 	doSomething(data->arg);
-
-    // Resolve promise
-	if(napi_resolve_deferred(env, data->deferred, undefined) != napi_ok)
-		GET_AND_THROW_LAST_ERROR(env);
 }
 
 void complete(napi_env env, napi_status status, void* pData) {
 	AsyncData* data = (AsyncData*)pData;
 
-	if(napi_delete_async_work(env, data->work) != napi_ok)
+    // Resolve promise
+	if(napi_resolve_deferred(env, data->deferred, undefined) != napi_ok)
 		GET_AND_THROW_LAST_ERROR(env);
+
+	printf("A\n");
+	if(napi_delete_async_work(env, data->work) != napi_ok) {
+		printf("B\n");
+		GET_AND_THROW_LAST_ERROR(env);
+	}
+	printf("C\n");
 
 	delete data;
 }

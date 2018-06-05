@@ -9,3 +9,5 @@ napiTest.doSomething(34)
 });
 
 console.log('Before Promise resolved');
+
+setTimeout(() => { console.log('Exiting...'); }, 2000);
