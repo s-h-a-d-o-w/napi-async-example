@@ -100,10 +100,13 @@ napi_value wrapDoSomething(napi_env env, napi_callback_info info) {
 		AsyncData* data = new AsyncData;
 		data->deferred = deferred;
 		data->arg = arg;
-		data->work = work;
 
 		napi_create_string_utf8(env, "work:doSomething", NAPI_AUTO_LENGTH, &workName);
 		NAPI_CALL(env, napi_create_async_work(env, NULL, workName, execute, complete, data, &work));
+
+		// This has to happen after napi_create_async_work!
+		data->work = work;
+
 		NAPI_CALL(env, napi_queue_async_work(env, work));
 	}
 
