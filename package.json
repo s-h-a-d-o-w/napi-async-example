@@ -1,8 +1,8 @@
 {
-  "name": "napi-test",
+  "name": "napi-async-example",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "https://github.com/s-h-a-d-o-w/napi-test.git",
+  "repository": "https://github.com/s-h-a-d-o-w/napi-async-example.git",
   "author": "Andreas Opferkuch <s-h-a-d-o-w@users.noreply.github.com>",
   "license": "MIT",
   "scripts": {
