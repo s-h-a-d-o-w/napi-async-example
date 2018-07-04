@@ -1,3 +1,1 @@
-Temp repo for testing N-API.
-
-All problems are taken care of, can proceed with Promise-based N-API projects.
+A native add-on based on N-API that does its work asynchronously and returns a Promise.

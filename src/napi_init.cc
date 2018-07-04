@@ -8,6 +8,10 @@
 // https://github.com/luismreis/node-openvg/blob/7dc7a142905afcb485f4ea7da33826210d0dc066/src/node-common.h#L39
 // Also e.g. (not used here):
 // https://github.com/luismreis/node-openvg/blob/7dc7a142905afcb485f4ea7da33826210d0dc066/src/argchecks.h
+
+// Empty value so that macros here are able to return NULL or void
+#define NAPI_RETVAL_NOTHING // Intentionally blank #define
+
 #define GET_AND_THROW_LAST_ERROR(env)                                        \
 	do {                                                                     \
 		const napi_extended_error_info *error_info;                          \
@@ -33,6 +37,10 @@
 #define NAPI_CALL(env, the_call)                                         \
 	NAPI_CALL_BASE(env, the_call, nullptr)
 
+// Returns empty if the_call doesn't return napi_ok.
+#define NAPI_CALL_RETURN_VOID(env, the_call)                             \
+	NAPI_CALL_BASE(env, the_call, NAPI_RETVAL_NOTHING)
+
 
 // GLOBALS
 // ===============================================
@@ -47,28 +55,25 @@ typedef struct {
 	napi_async_work work;
 
 	int arg;
+	int retval;
 } AsyncData;
 
 void execute(napi_env env, void* pData) {
 	AsyncData* data = (AsyncData*)pData;
 
-	doSomething(data->arg);
+	data->retval = doSomething(data->arg);
 }
 
 void complete(napi_env env, napi_status status, void* pData) {
 	AsyncData* data = (AsyncData*)pData;
 
-    // Resolve promise
-	if(napi_resolve_deferred(env, data->deferred, undefined) != napi_ok)
-		GET_AND_THROW_LAST_ERROR(env);
+	// Resolve Promise
+	napi_value retval;
+	NAPI_CALL_RETURN_VOID(env, napi_create_int32(env, data->retval, &retval));
+	NAPI_CALL_RETURN_VOID(env, napi_resolve_deferred(env, data->deferred, retval));
 
-	printf("A\n");
-	if(napi_delete_async_work(env, data->work) != napi_ok) {
-		printf("B\n");
-		GET_AND_THROW_LAST_ERROR(env);
-	}
-	printf("C\n");
-
+	// Cleanup
+	NAPI_CALL_RETURN_VOID(env, napi_delete_async_work(env, data->work));
 	delete data;
 }
 // ===============================================
@@ -91,7 +96,7 @@ napi_value wrapDoSomething(napi_env env, napi_callback_info info) {
 	}
 	else {
 		// Setup and queue our async work
-		int32_t arg;
+		int arg;
 		NAPI_CALL(env, napi_get_value_int32(env, args[0], &arg));
 
 		napi_async_work work;
